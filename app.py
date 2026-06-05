@@ -195,6 +195,18 @@ except Exception as e:
     st.error(
         f"Unexpected Error: {e}"
     )
+# --- INSERT THIS IMMEDIATELY AFTER LOADING YOUR DATAFRAME ---
+# Clean target columns and strip unit text strings
+for col in df.columns:
+    if df[col].dtype == 'object':
+        # Strip out common unit text patterns safely
+        df[col] = df[col].astype(str).str.replace('micromol/m2', '', case=False).str.strip()
+        # Convert to numeric values, forcing remaining string errors to NaN
+        df[col] = pd.to_numeric(df[col], errors='coerce')
+
+# Handle any NaN gaps created by the string conversions
+df = df.ffill().bfill()
+# -------------------------------------------------------------
 
 # =====================================================
 # STOP IF NO DATA
